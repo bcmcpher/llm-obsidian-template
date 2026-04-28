@@ -1,0 +1,13 @@
+{
+  "eval_id": 3,
+  "eval_name": "ingest-academic-paper",
+  "prompt": "Add the RAG paper to my wiki: https://arxiv.org/abs/2005.11401 — this is the original Lewis et al. paper on retrieval-augmented generation. I need it for my RAG research notes. Authors are Patrick Lewis, Ethan Perez et al., published at NeurIPS 2020.",
+  "assertions": [
+    {"name": "paper-file-in-correct-folder", "description": "A .md file was created in sources/paper/ with YYYY-MM-DD- prefix"},
+    {"name": "medium-is-paper", "description": "Frontmatter has medium: paper"},
+    {"name": "authors-filled", "description": "authors field contains Lewis and Perez"},
+    {"name": "year-filled", "description": "year field is 2020"},
+    {"name": "url-present", "description": "url field points to arxiv.org/abs/2005.11401"},
+    {"name": "log-updated", "description": "_meta/log.md contains an entry for this paper"}
+  ]
+}

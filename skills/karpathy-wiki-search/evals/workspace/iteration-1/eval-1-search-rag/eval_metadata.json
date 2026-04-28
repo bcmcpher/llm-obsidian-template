@@ -1,0 +1,12 @@
+{
+  "eval_id": 1,
+  "eval_name": "search-rag-domain-overview",
+  "prompt": "What do I know about retrieval-augmented generation? I'm trying to remember what sources I have and what the key concepts are.",
+  "assertions": [
+    {"name": "structured-output-format", "description": "Response uses the defined format: synthesized answer, graph path, sources table, adjacent concepts, coverage gaps"},
+    {"name": "graph-traversal-described", "description": "Response explicitly describes which folders/files were checked (topics/concepts/, atoms/, sources/)"},
+    {"name": "graceful-empty-handling", "description": "If vault has no RAG content, response clearly states this and suggests next steps rather than fabricating connections"},
+    {"name": "no-hallucinated-files", "description": "Any [[note links]] cited in the response correspond to files that actually exist in the vault"},
+    {"name": "confidence-signaled", "description": "Response signals confidence level based on source status (processed/read/unread or absence of content)"}
+  ]
+}

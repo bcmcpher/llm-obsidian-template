@@ -1,0 +1,13 @@
+{
+  "eval_id": 2,
+  "eval_name": "ingest-meeting-notes-multi-topic",
+  "prompt": "I just had a meeting with my team about RAG architectures. We discussed: chunking strategies (fixed-size vs semantic), embedding models (we compared Cohere embed-v3 and OpenAI text-embedding-3-large), and storage options (pgvector vs Chroma). We decided to benchmark pgvector this week. Attendees: me, Sarah, and Dev. Add this as a meeting note.",
+  "assertions": [
+    {"name": "meeting-file-in-correct-folder", "description": "A .md file was created in sources/meeting/ with YYYY-MM-DD- prefix"},
+    {"name": "medium-is-meeting", "description": "Frontmatter has medium: meeting"},
+    {"name": "attendees-filled", "description": "attendees field is populated with at least two names"},
+    {"name": "action-items-present", "description": "## Action Items section has at least one non-placeholder item (pgvector benchmark)"},
+    {"name": "connection-fields-present", "description": "At least one introduces:: or supports:: inline field present"},
+    {"name": "no-url-field", "description": "The note does not contain a 'url:' frontmatter field (meetings have no URL)"}
+  ]
+}

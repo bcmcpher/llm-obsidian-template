@@ -1,0 +1,7 @@
+# Ignore eval output files — these are vault note copies from benchmark runs
+workspace/*/eval-*/with_skill/outputs/*.md
+workspace/*/eval-*/without_skill/outputs/*.md
+
+# Keep metadata, grading, and benchmark summaries
+!workspace/*/eval-*/with_skill/outputs/result_summary.md
+!workspace/*/eval-*/without_skill/outputs/result_summary.md

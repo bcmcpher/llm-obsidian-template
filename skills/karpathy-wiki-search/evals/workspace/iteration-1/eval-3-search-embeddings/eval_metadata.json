@@ -1,0 +1,11 @@
+{
+  "eval_id": 3,
+  "eval_name": "search-embedding-models-sparse-content",
+  "prompt": "Do I have any notes on embedding models? Specifically around how different models compare for retrieval tasks.",
+  "assertions": [
+    {"name": "honest-sparse-reporting", "description": "If only sparse content exists (e.g., a meeting mention), response reports it accurately without inflating into a full answer"},
+    {"name": "unread-sources-flagged", "description": "Any unread or unprocessed sources are flagged as unverified rather than cited as authoritative"},
+    {"name": "gap-suggestion-provided", "description": "Response suggests specific next steps for filling the knowledge gap (ingest a resource, create an atom)"},
+    {"name": "grep-fallback-transparent", "description": "If grep was used instead of graph traversal, the response says so"}
+  ]
+}

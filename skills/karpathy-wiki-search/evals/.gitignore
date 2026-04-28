@@ -1,0 +1,7 @@
+# Ignore eval output files — response.md files from benchmark runs
+workspace/*/eval-*/with_skill/outputs/response.md
+workspace/*/eval-*/without_skill/outputs/response.md
+
+# Keep result summaries and benchmark files
+!workspace/*/eval-*/with_skill/outputs/result_summary.md
+!workspace/*/eval-*/without_skill/outputs/result_summary.md
