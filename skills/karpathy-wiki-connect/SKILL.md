@@ -114,8 +114,37 @@ grep -rl "concept-keyword" "$VAULT/atoms/"
 **Atom promotion criteria:**
 1. Concept appears in title, abstract, or key contributions → strong candidate
 2. You'd naturally link to it from 3+ other notes → create atom
-3. Better as a glossary definition → `glossary/` stub instead
+3. Better as a glossary definition → `glossary/` stub instead (see below)
 4. Highly specific implementation detail unlikely to recur → leave as text, no atom
+
+**When criterion 3 applies — glossary stub workflow:**
+
+A term belongs in `glossary/` when its value is definitional rather than evidential: stable definition, no competing claims to track, referenced via `defines::` rather than `supports::` or `introduces::`.
+
+Ask: "Create a glossary stub for '[term]'? (Yes / Skip)"
+
+If yes, create `glossary/kebab-term.md`:
+```markdown
+---
+title: Term Name
+term: term name
+aliases: []
+domain: <inferred from topic area>
+tags: []
+created: YYYY-MM-DD
+---
+
+## Definition
+<one or two sentences drafted from the source>
+
+## Usage Notes
+<!-- When/how the term is used; common confusions -->
+
+## Source
+cites:: [[source-filename]]
+```
+
+Then add `defines:: [[term-name]]` to the source note's `## Connections` section. Ask before creating each stub.
 
 **Choosing the relation type** (excerpt — see `references/vault-schema.md` for the full decision tree including atom→atom epistemic relations)**:**
 
@@ -180,6 +209,7 @@ After all changes are confirmed, append to `_meta/log.md`:
 ## [YYYY-MM-DD] <medium> | <Title>
 url:: <url or n/a>
 atoms:: [[Atom A]], [[Atom B]]
+skill:: karpathy-wiki-connect
 notes: processed via karpathy-wiki-connect
 ```
 

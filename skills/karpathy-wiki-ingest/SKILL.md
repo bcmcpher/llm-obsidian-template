@@ -135,11 +135,39 @@ related::
 Set `confidence: low` for single-source atoms. Upgrade to `medium` when two or more independent sources support it.
 
 ### 7. Add glossary terms (optional)
-If the source defines a specific technical term clearly, offer a glossary stub:
+
+If the source defines a specific technical term precisely — and that term's value is the definition itself rather than a claim worth accumulating evidence for — offer a glossary stub.
+
+**Glossary vs. atom decision:**
+- **Glossary**: the term has a stable, non-controversial definition; other notes will reference it via `defines::` rather than `supports::` or `introduces::`
+- **Atom**: the concept makes claims, can accumulate evidence from multiple sources, or connects structurally to other concepts → use Step 6 instead
+
+For each glossary candidate, ask: "Create a glossary stub for '[term]'? (Yes / Skip)"
+
+If yes, create `glossary/kebab-term.md`:
+```markdown
+---
+title: Term Name
+term: term name
+aliases: []
+domain: <inferred from topic area>
+tags: []
+created: YYYY-MM-DD
+---
+
+## Definition
+<one or two sentences — draft from the source's own language>
+
+## Usage Notes
+<!-- When/how the term is used; common confusions -->
+
+## Source
+cites:: [[source-filename]]
 ```
-glossary/term-name.md
-```
-Glossary entries are lighter than atoms — just definition + usage notes.
+
+Then add `defines:: [[term-name]]` to the source note's `## Connections` section.
+
+Ask before creating each stub — do not auto-create.
 
 ### 8. Update the ingest log
 Append to `_meta/log.md`:
@@ -147,6 +175,8 @@ Append to `_meta/log.md`:
 ## [YYYY-MM-DD] <medium> | <Title>
 url:: <url or n/a>
 atoms:: [[Atom A]], [[Atom B]]
+skill:: karpathy-wiki-ingest
+notes: <optional>
 ```
 
 ---

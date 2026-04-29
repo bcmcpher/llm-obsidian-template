@@ -121,6 +121,39 @@ If yes, create `atoms/kebab-concept.md` with `confidence: low` and `cites:: [[me
 
 Ask before creating each stub — do not auto-create.
 
+### 6b. Glossary stubs for new terms
+
+For each technical term that surfaced in the meeting that needs precise definition but doesn't warrant an atom — no claims, no evidence chain, just a stable definition:
+
+> "The term [X] came up but has no glossary entry yet. Want to create a stub? (Yes / Skip)"
+
+If yes, create `glossary/kebab-term.md`:
+```markdown
+---
+title: Term Name
+term: term name
+aliases: []
+domain: <inferred from discussion topic>
+tags: []
+created: YYYY-MM-DD
+---
+
+## Definition
+<draft from how the term was used in the meeting>
+
+## Usage Notes
+<!-- When/how the term is used; common confusions -->
+
+## Source
+cites:: [[meeting-filename]]
+```
+
+Then add `defines:: [[term-name]]` to the meeting note's `## Connections` section.
+
+**Atom vs. glossary:** if the term has competing definitions, accumulated claims, or would naturally connect to multiple other concepts via structural relations — create an atom stub (Step 6) instead.
+
+Ask before creating each stub — do not auto-create.
+
 ### 7. Status
 
 Set `status: unprocessed` on creation. Note to the user:
