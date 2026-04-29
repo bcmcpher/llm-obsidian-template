@@ -13,7 +13,7 @@ topics/concepts/  →  atoms/  →  sources/
   (broad domain)      (concept)   (specific reference)
 ```
 
-Every connection between notes is typed (e.g., `extends::`, `supports::`, `cites::`), making the graph navigable by relationship kind — not just by link existence.
+Every connection between notes is typed (e.g., `extends::`, `supports::`, `refutes::`), making the graph navigable by relationship kind — not just by link existence.
 
 ---
 
@@ -22,11 +22,8 @@ Every connection between notes is typed (e.g., `extends::`, `supports::`, `cites
 ```
 vault/
 ├── _templates/               # Templater input templates (not indexed)
-│   ├── source-web.md
-│   ├── source-video.md
-│   ├── source-paper.md
-│   ├── source-docs.md
-│   ├── source-meeting.md
+│   ├── source-digital.md     # All digital sources (web, video, paper, docs)
+│   ├── source-meeting.md     # Meeting notes (no URL; different schema)
 │   ├── atom.md
 │   ├── glossary.md
 │   ├── topic-concept.md
@@ -82,21 +79,55 @@ extends:: [[Other Atom]]
 cites:: [[source-filename]]
 ```
 
-| Field | Direction | Meaning |
-|-------|-----------|---------|
-| `supports::` | source → atom/topic | Source provides evidence for this concept |
-| `introduces::` | source → atom | Source is where this concept first appeared in vault |
-| `demonstrates::` | source → atom | Source shows a concrete example |
-| `extends::` | atom → atom | Builds on / specializes another concept |
-| `uses::` | atom → atom | Applies or depends on another concept |
-| `contradicts::` | atom → atom | Conflicts with another concept |
-| `part-of::` | atom → atom | Component of a larger concept |
-| `related::` | any → any | Loosely connected (fallback; refine monthly) |
-| `cites::` | any → source | References a source as evidence |
-| `defines::` | any → glossary | Elaborates or defines a glossary term |
-| `covers::` | topic → atom | This topic map covers these atoms |
+### Affirmative (source → atom)
 
-Full taxonomy and status values: `_meta/schema.md`
+| Field | Meaning |
+|-------|---------|
+| `supports::` | Source provides evidence for a claim in this atom |
+| `introduces::` | Source is where this concept first appeared in the vault |
+| `demonstrates::` | Source shows a concrete worked example |
+
+### Skeptical (source → atom)
+
+| Field | Meaning |
+|-------|---------|
+| `challenges::` | Source questions or weakens a claim; describe the tension in the atom body |
+| `refutes::` | Source provides direct counter-evidence; stronger than `challenges::` |
+
+### Any note → source
+
+| Field | Meaning |
+|-------|---------|
+| `cites::` | References a source as evidence (affirmative or neutral) |
+| `rebuts::` | References a source as counter-evidence |
+
+### Structural (atom → atom)
+
+| Field | Meaning |
+|-------|---------|
+| `extends::` | Builds on / specializes another concept |
+| `uses::` | Applies or depends on another concept |
+| `part-of::` | Component of a broader concept |
+
+### Epistemic (atom → atom)
+
+| Field | Meaning |
+|-------|---------|
+| `contradicts::` | Direct logical conflict; document tension in both atoms |
+| `challenges::` | Weakens or questions without direct contradiction |
+| `supersedes::` | Replaces or obsoletes in modern understanding |
+| `limits::` | Defines where the target breaks down or partially applies |
+| `contrasts-with::` | Alternative approach to the same problem |
+
+### Navigational
+
+| Field | Meaning |
+|-------|---------|
+| `related::` | Loosely connected; fallback only — refine monthly |
+| `defines::` | Any note → glossary term |
+| `covers::` | Topic map → atoms it covers |
+
+Full taxonomy with decision tree for skeptical relations: `_meta/schema.md`
 
 ---
 
@@ -129,6 +160,7 @@ Full taxonomy and status values: `_meta/schema.md`
 - **Template folder location:** `_templates`
 - Enable **Trigger Templater on new file creation** (optional but recommended)
 - Set a hotkey for **Create new note from template** (e.g., `Ctrl+T`)
+- All digital sources use `source-digital.md`; set `medium:` manually after creation
 
 ### 2. Dataview setup
 `Settings → Dataview`:
@@ -137,7 +169,7 @@ Full taxonomy and status values: `_meta/schema.md`
 - Set **Refresh interval** to `2500ms` or lower for responsive live tables
 
 ### 3. Exclude archive from indexing
-Already configured in `.obsidian/app.json`. The `.archive/` folder will not appear in file explorer, graph, or search results. To verify: `Settings → Files & Links → Excluded files` should show `.archive`.
+Already configured in `.obsidian/app.json`. The `.archive/` folder will not appear in file explorer, graph, or search results.
 
 ### 4. Graph view coloring (optional but recommended)
 `Settings → Graph view → Groups`:
@@ -146,36 +178,38 @@ Already configured in `.obsidian/app.json`. The `.archive/` folder will not appe
 - Add group: `path:glossary/` → color green
 - Add group: `path:topics/` → color purple
 
-This makes source/atom/topic layers visually distinct in the graph.
-
-### 5. File naming
-`Settings → Files & Links`:
-- **Default location for new notes:** set to a sensible default or leave as vault root
-- Templates auto-assign the correct folder — always use Templater to create notes
-
 ---
 
 ## Daily Workflow
 
-### Ingesting a new source
-1. Use Claude Code with the `karpathy-wiki-ingest` skill: *"save this article: [url] — [why you saved it]"*
-2. Or manually: `Ctrl+T` → pick the right source template → fill in **Why Saved**, **Summary**, **Key Points**, and connection fields
-3. Append an entry to `_meta/log.md`
+### Quick capture (URL only)
+Use the `karpathy-wiki-capture` skill: *"quick save: [url] — [one sentence why]"*
 
-### Promoting to atoms
-After reading a source (`status: read`), consider:
-- Does it introduce a concept not yet in `atoms/`? → Create an atom stub
-- Does it define a term? → Add a glossary entry
-- Does it support or contradict an existing atom? → Update that atom's connections
+The note lands in the inbox with just a URL, a placeholder title, and your reason. Metadata and connections are deferred.
+
+### Full ingest (with immediate processing)
+Use `karpathy-wiki-ingest`: *"save this article: [url] — [why you saved it]"*
+
+Guides you through connections and atom promotion in one step.
+
+### Processing your inbox
+Use `karpathy-wiki-connect`: *"process my inbox"*
+
+For each unread note: fetches the URL to extract title, authors, abstract/summary; fills in missing metadata; then guides connection wiring, atom promotion, and status update.
 
 ### Searching your knowledge
-Use Claude Code with the `karpathy-wiki-search` skill: *"what do I know about [topic]?"*
+Use `karpathy-wiki-search`: *"what do I know about [topic]?"*
 
-Or manually: start at `topics/concepts/`, follow `covers::` to atoms, follow `cites::` to sources.
+Navigates graph top-down: concept maps → atoms → sources.
+
+### Topic validity review
+Use `karpathy-wiki-review`: *"review my [topic] concept map"*
+
+Audits semantic coherence, unacknowledged conflicts, coverage gaps, and relationship precision for one topic at a time.
 
 ### Maintenance
-- **Weekly:** Open `_meta/index.md` — review the "Stale Unread Sources" and "Orphan Atoms" tables
-- **Monthly:** Run `bash _meta/lint.sh` for programmatic checks; run one LLM-assisted check category (see `_meta/schema.md` → Linting section)
+- **Weekly:** Open `_meta/index.md` — review stale unread sources and orphan atoms
+- **Monthly:** Run `bash _meta/lint.sh` for programmatic checks; run `karpathy-wiki-review` on one active topic
 
 ---
 
@@ -200,7 +234,7 @@ Full article/transcript text is **not stored in the vault** by default. The `.ar
 1. Save full text to `.archive/YYYY-MM-DD-slug.md`
 2. Add `raw:: .archive/YYYY-MM-DD-slug.md` to the source note
 
-The archive is gitignored and excluded from Obsidian's indexer — it stays invisible to the graph and doesn't slow sync.
+The archive is gitignored and excluded from Obsidian's indexer.
 
 **When to use it:** High-value sources at risk of link rot; long-form content you expect to re-read in full; papers you need offline.
 
@@ -208,12 +242,67 @@ The archive is gitignored and excluded from Obsidian's indexer — it stays invi
 
 ## Claude Code Skills
 
-Two skills are installed at `~/.claude/skills/` for daily vault use:
+Five skills installed at `skills/` for daily vault use:
 
 | Skill | Trigger phrase | What it does |
 |-------|---------------|--------------|
-| `karpathy-wiki-ingest` | "save this", "add to wiki", "bookmark", "ingest" | Creates the correct source note, guides connections, seeds atoms |
-| `karpathy-wiki-search` | "what do I know about", "find sources on", "search my wiki" | Navigates graph top-down, surfaces sources with citations |
+| `karpathy-wiki-capture` | "quick save this", "just bookmark", "capture for later" | URL + one sentence → inbox note; no metadata fetching, no connections |
+| `karpathy-wiki-ingest` | "save this", "add to wiki", "ingest" | Full one-step processing: fetches URL, fills metadata, wires connections, promotes atoms |
+| `karpathy-wiki-connect` | "process my inbox", "wire up my notes" | Fetches URLs to enrich metadata, then wires graph connections for each unread note |
+| `karpathy-wiki-search` | "what do I know about", "find sources on" | Navigates graph top-down; surfaces sources with typed relationship paths |
+| `karpathy-wiki-review` | "review this topic", "audit my concept map" | Semantic validity audit of one topic: gaps, misclassified relations, implicit conflicts |
+
+---
+
+## Optional MCP Integrations
+
+The `karpathy-wiki-connect` skill can fetch most URLs natively via WebFetch, but two source types benefit from dedicated MCP servers: YouTube transcripts and PDFs.
+
+### YouTube Transcripts
+
+The `karpathy-wiki-connect` skill extracts video title and channel from the YouTube page, but cannot retrieve full transcripts without an API. A transcript MCP enables structured `## Key Points` with timestamps.
+
+**Option:** [`mcp-youtube`](https://github.com/anaisbetts/mcp-youtube) — wraps the `youtube-transcript` Node package; no API key needed for public videos.
+
+To install:
+```bash
+npm install -g @anaisbetts/mcp-youtube
+```
+
+Then add to `.claude/settings.local.json`:
+```json
+"mcpServers": {
+  "youtube": {
+    "command": "mcp-youtube"
+  }
+}
+```
+
+### PDF Text Extraction
+
+PDFs cannot be fetched as text via WebFetch. A PDF MCP lets the connect skill extract title, authors, abstract, and body text from local or remote PDF files.
+
+**Option:** [`mcp-pdf`](https://github.com/modelcontextprotocol/servers/tree/main/src/everything) or a local wrapper around `pdftotext` (part of `poppler-utils`).
+
+A minimal approach using `pdftotext` (already installed on most Linux/macOS systems):
+
+```bash
+# Install poppler if needed
+apt install poppler-utils   # Linux
+brew install poppler        # macOS
+```
+
+Then add a shell MCP wrapper to `.claude/settings.local.json`:
+```json
+"mcpServers": {
+  "pdf": {
+    "command": "bash",
+    "args": ["-c", "pdftotext \"$1\" -", "--", ""]
+  }
+}
+```
+
+Note: test specific MCP server stability before committing to one — the ecosystem is still maturing. The skills degrade gracefully without these integrations (PDFs prompt for manual metadata; videos leave Key Points empty).
 
 ---
 

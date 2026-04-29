@@ -21,5 +21,9 @@ extends::
 uses:: 
 part-of:: 
 contradicts:: 
+challenges:: 
+supersedes:: 
+limits:: 
+contrasts-with:: 
 related:: 
 defines:: 

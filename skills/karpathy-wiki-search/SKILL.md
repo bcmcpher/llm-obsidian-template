@@ -32,8 +32,15 @@ Identify what kind of answer the user needs:
 | "What's in my project notes for P?" | `topics/projects/proj-P.md` |
 | "Find evidence for/against claim C" | atoms matching C → `contradicts::` |
 
-### Step 2: Scan concept maps (broad queries)
-List `topics/concepts/` and match on filename or `tags` frontmatter. Read matching files and extract:
+### Step 2: Scan topic files (broad queries)
+Check all three topic directories for matches on filename or `tags` frontmatter:
+- `topics/concepts/` — domain concept maps (`covers::` → atoms)
+- `topics/research/` — research synthesis notes (`covers::` → atoms, `question:` frontmatter)
+- `topics/projects/` — project workspaces (`covers::` → atoms)
+
+If all three are empty (new vault), skip to the grep fallback section below and note that the graph hasn't been populated yet.
+
+Read matching topic files and extract:
 - `covers::` — atom list for this domain
 - `cites::` — high-level sources
 - `related::` — adjacent domains

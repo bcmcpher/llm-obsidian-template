@@ -9,6 +9,8 @@ description: Ingest a new source into the personal Karpathy-style Obsidian wiki 
 
 This vault uses a layered structure: raw sources feed concept atoms, which feed topic maps. Your job here is to create a well-formed source note, connect it to existing atoms, and optionally seed new atoms — keeping the graph growing without duplicating work.
 
+For quick saves without graph wiring, use `karpathy-wiki-capture`. To process accumulated inbox notes, use `karpathy-wiki-connect`.
+
 For the relationship taxonomy and full field definitions, read: `references/vault-schema.md`
 
 ---
@@ -23,6 +25,8 @@ For the relationship taxonomy and full field definitions, read: `references/vaul
 | Docs / API reference | `sources/docs/` | `docs.*`, `*.readthedocs.io`, official library sites |
 | Meeting / discussion | `sources/meeting/` | No URL; in-person or virtual conversation |
 
+All digital sources use `_templates/source-digital.md`. Meetings use `_templates/source-meeting.md`.
+
 ---
 
 ## Workflow
@@ -30,49 +34,74 @@ For the relationship taxonomy and full field definitions, read: `references/vaul
 ### 1. Classify the source
 Infer the medium from the URL or context. If genuinely ambiguous, ask.
 
-### 2. Determine filename
+### 2. Fetch the URL
+Fetch the URL immediately to extract metadata. Use what you find to fill the template accurately.
+
+**By medium:**
+- **Web**: extract title, author, publication date, and offer a summary draft from the lead paragraphs
+- **arXiv/paper**: fetch the abstract page; extract title, authors array, year, venue, and write the abstract as `## Summary`
+- **YouTube/video**: extract title and channel name from the page; note that full transcripts require an optional MCP server (see README)
+- **Docs**: extract title, tool name from subdomain/title, version from URL path if present
+- **PDFs** (URL ends in `.pdf`): cannot extract via fetch — ask the user for title, authors, year, and a brief summary directly
+- **Paywalled/failed**: ask the user to paste the key fields
+
+### 3. Determine filename
 Pattern: `YYYY-MM-DD-kebab-title.md`  
-**Use today's date (the date you are saving it) — never the publication date.** A 2020 paper saved today gets `2026-04-27-paper-title.md`, not `2020-01-01-paper-title.md`.  
-Derive the kebab slug from the title (drop articles, punctuate with hyphens, max ~6 words).
+**Use today's date — never the publication date.**  
+Derive the slug from the real title (now known from the fetch), drop articles, max ~6 words.
 
-- `2026-04-27-attention-is-all-you-need.md`
-- `2026-04-27-karpathy-makemore-series.md`
-- `2026-04-27-pytorch-dataloader-docs.md`
-- `2026-04-27-team-rag-architecture-sync.md` ← meetings use context not title
+Confirm the filename before writing if there's any ambiguity.
 
-Confirm the filename with the user before writing if there's any ambiguity.
+### 4. Fill the template
+Write the file to the correct subfolder using `_templates/source-digital.md` as the base.
 
-### 3. Fill the template
-Write the file to the correct subfolder. Required fields per medium:
+Universal frontmatter fields (all digital sources):
+```yaml
+title: <from fetch>
+url: <url>
+medium: <web|video|paper|docs>
+saved: <today YYYY-MM-DD>
+tags: []
+status: unread
+```
 
-**All sources:** `title`, `medium`, `saved` (today), `tags`, `status: unread`  
-**Web/video/paper/docs:** also `url`  
-**Video:** also `channel`  
-**Paper:** also `authors[]`, `year`  
-**Docs:** also `tool`, optionally `version` and `section`  
-**Meeting:** `date` instead of `saved`, `attendees[]`, `context`, `status: unprocessed`
+Type-specific fields to add:
+- **Paper**: `authors: []`, `year:`, optionally `venue:`
+- **Video**: `channel:`
+- **Docs**: `tool:`, optionally `version:`, `section:`
 
 Ask the user for:
 - **Why Saved** — what specific question or project prompted this? (1–3 sentences, their own words)
-- **Summary** — 2–3 sentence digest of what the source says. If you fetched the URL, offer a draft for them to edit.
-- **Key Points** — bullet list of takeaways. Offer to draft from fetched content.
+- **Summary** — offer a draft from the fetched content; ask them to edit
+- **Key Points** — offer to draft from fetched content
 
 Never reproduce full article text. Summaries only.
 
-### 4. Wire up connections
-Ask which existing atoms or concepts this source relates to. Check `atoms/` for likely candidates (grep titles or tags). Then write the Dataview inline fields under `## Connections`:
+**Meeting notes** use `_templates/source-meeting.md` with `date` instead of `saved`, `attendees[]`, `context`, `status: unprocessed`. No URL.
+
+### 5. Wire up connections
+Ask which existing atoms or concepts this source relates to. Check for likely candidates:
+
+```bash
+VAULT=/home/bcmcpher/Projects/claude/karpathy-wiki
+ls "$VAULT/atoms/" | grep -i "keyword"
+grep -rl "keyword" "$VAULT/atoms/"
+```
+
+Then write the Dataview inline fields under `## Connections`:
 
 ```
 supports:: [[Relevant Atom]]
 introduces:: [[New Concept]]
+challenges:: [[Claim This Source Questions]]
+refutes:: [[Claim With Counter-Evidence]]
+cites:: [[Prior Work]]
 related:: [[Adjacent Concept]]
 ```
 
-For papers, also check if it builds on known work: `cites:: [[Prior Atom]]`
+Use `challenges::` when the source questions a claim without fully refuting it. Use `refutes::` when it provides direct counter-evidence. Use `related::` only as a fallback — it can be refined during the monthly review. See `references/vault-schema.md` for the full decision tree.
 
-If unsure, use `related::` as a holding pattern — it can be refined during the monthly LLM-assisted review.
-
-### 5. Promote to atoms (optional but encouraged)
+### 6. Promote to atoms (optional but encouraged)
 If the source introduces a concept not yet in `atoms/`, offer to create a stub. A good atom candidate is any concept that:
 - Appears in the source's title or abstract
 - Would be referenced from multiple future sources
@@ -105,14 +134,14 @@ related::
 
 Set `confidence: low` for single-source atoms. Upgrade to `medium` when two or more independent sources support it.
 
-### 6. Add glossary terms (optional)
+### 7. Add glossary terms (optional)
 If the source defines a specific technical term clearly, offer a glossary stub:
 ```
 glossary/term-name.md
 ```
 Glossary entries are lighter than atoms — just definition + usage notes.
 
-### 7. Update the ingest log
+### 8. Update the ingest log
 Append to `_meta/log.md`:
 ```markdown
 ## [YYYY-MM-DD] <medium> | <Title>

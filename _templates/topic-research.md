@@ -4,6 +4,7 @@ topic-type: research
 question: 
 tags: []
 created: <% tp.date.now("YYYY-MM-DD") %>
+reviewed: 
 ---
 
 ## Research Question

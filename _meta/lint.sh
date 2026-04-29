@@ -11,7 +11,8 @@
 #   3. Stale unread sources (>30 days)
 #   4. Orphan atoms (no cites::, no backlinks from topics)
 #   5. Archive mismatches (raw:: pointing to missing file)
-#   6. Vault summary counts
+#   6. Graph health (inbox-only sources, isolated atoms, bloated atoms, broad topic maps)
+#   7. Vault summary counts
 
 set -euo pipefail
 
@@ -170,7 +171,52 @@ done < <(find "$VAULT/sources" -name "*.md" ! -name ".gitkeep" -print0)
 
 ok "archive mismatch check complete"
 
-# ── 6. Summary ───────────────────────────────────────────────────────────────
+# ── 6. Graph Health ──────────────────────────────────────────────────────────
+
+echo ""
+echo "── 6. Graph Health ────────────────────────────────────────────────────────"
+
+# 6a. Inbox-only sources: unread/unprocessed with no populated Connections
+while IFS= read -r -d '' f; do
+    status_line=$(grep "^status:" "$f" 2>/dev/null | head -1 || true)
+    if echo "$status_line" | grep -q "unread\|unprocessed"; then
+        has_connections=$(grep -cE "^(supports|introduces|demonstrates|cites|related)::[[:space:]]*\[\[" "$f" 2>/dev/null || true)
+        if [ "$has_connections" -eq 0 ]; then
+            label=$(realpath --relative-to="$VAULT" "$f")
+            warn "$label — unread with no Connections wired (inbox-only; run karpathy-wiki-connect)"
+        fi
+    fi
+done < <(find "$VAULT/sources" -name "*.md" ! -name ".gitkeep" -print0)
+
+# 6b. Isolated atoms: no populated relation fields at all
+while IFS= read -r -d '' f; do
+    has_relations=$(grep -cE "^(extends|uses|contradicts|part-of|related|cites)::[[:space:]]*\[\[" "$f" 2>/dev/null || true)
+    if [ "$has_relations" -eq 0 ]; then
+        warn "atoms/$(basename "$f") — atom has no populated relation fields (fully isolated)"
+    fi
+done < <(find "$VAULT/atoms" -name "*.md" ! -name ".gitkeep" -print0)
+
+# 6c. Bloated atoms: high cites + high related + long body (soft heuristic — split candidate)
+while IFS= read -r -d '' f; do
+    cites_count=$(grep -c "^cites::" "$f" 2>/dev/null || true)
+    related_count=$(grep -c "^related::" "$f" 2>/dev/null || true)
+    line_count=$(wc -l < "$f")
+    if [ "$cites_count" -gt 5 ] && [ "$related_count" -gt 4 ] && [ "$line_count" -gt 100 ]; then
+        warn "atoms/$(basename "$f") — may cover multiple concepts (cites=$cites_count related=$related_count lines=$line_count); consider splitting"
+    fi
+done < <(find "$VAULT/atoms" -name "*.md" ! -name ".gitkeep" -print0)
+
+# 6d. Broad topic maps: many covers:: entries (sub-domain split candidate)
+while IFS= read -r -d '' f; do
+    covers_count=$(grep "^covers::" "$f" 2>/dev/null | grep -o "\[\[" | wc -l || true)
+    if [ "$covers_count" -gt 15 ]; then
+        warn "topics/concepts/$(basename "$f") — covers $covers_count atoms; consider splitting into sub-domains"
+    fi
+done < <(find "$VAULT/topics/concepts" -name "*.md" ! -name ".gitkeep" -print0)
+
+ok "graph health check complete"
+
+# ── 7. Summary ───────────────────────────────────────────────────────────────
 
 echo ""
 echo "── Summary ────────────────────────────────────────────────────────────────"
