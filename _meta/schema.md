@@ -18,6 +18,7 @@ This file is the vault's constitution. Update it when adding or retiring relatio
 | Concept map | `topics/concepts/` | One domain per file | `title`, `topic-type` |
 | Project | `topics/projects/` | One project per file | `title`, `topic-type`, `status` |
 | Research | `topics/research/` | One research question per file | `title`, `topic-type`, `question` |
+| Export | `_exports/` | One file per compose session | (generated — no required frontmatter) |
 
 ---
 
@@ -185,3 +186,60 @@ These thresholds are soft signals surfaced as WARNings, not hard failures. They 
 | Topic map: too many atoms | Concept map | `covers::` > 15 entries | May span multiple domains; consider sub-topics |
 
 Note: high `cites::` count on a **source** note is not a smell. A survey paper or conference talk legitimately references many prior works.
+
+---
+
+## Valid Relation Fields
+
+Machine-readable list used by `_meta/lint.sh` Section 7 to detect unknown relation fields. Update this list when adding or retiring relation types.
+
+```
+supports
+introduces
+demonstrates
+challenges
+refutes
+extends
+uses
+part-of
+contradicts
+supersedes
+limits
+contrasts-with
+cites
+rebuts
+defines
+covers
+related
+raw
+```
+
+---
+
+## Tags
+
+Controlled vocabulary for `tags:` frontmatter. Lint Section 10 warns on tags not in this list. Add new tags here before using them.
+
+### Domain tags
+- `deep-learning`
+- `systems`
+- `statistics`
+- `mathematics`
+- `software-engineering`
+- `neuroscience`
+- `reinforcement-learning`
+- `natural-language-processing`
+- `computer-vision`
+
+### Type tags
+- `foundational`
+- `applied`
+- `speculative`
+- `tutorial`
+- `reference`
+- `survey`
+
+### Status tags
+- `needs-review`
+- `high-confidence`
+- `stale`

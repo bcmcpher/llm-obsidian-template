@@ -12,7 +12,11 @@
 #   4. Orphan atoms (no cites::, no backlinks from topics)
 #   5. Archive mismatches (raw:: pointing to missing file)
 #   6. Graph health (inbox-only sources, isolated atoms, bloated atoms, broad topic maps)
-#   7. Vault summary counts
+#   7. Structural integrity (part-of/covers asymmetry, atom freshness, unknown relation fields)
+#   8. Confidence and coverage (overconfident, underconfident, unvalidated, under-extracted)
+#   9. Conflict acknowledgment (bare conflict links)
+#  10. Tag vocabulary (unknown tags)
+#   Summary counts
 
 set -euo pipefail
 
@@ -216,7 +220,242 @@ done < <(find "$VAULT/topics/concepts" -name "*.md" ! -name ".gitkeep" -print0)
 
 ok "graph health check complete"
 
-# ── 7. Summary ───────────────────────────────────────────────────────────────
+# ── 7. Structural Integrity ──────────────────────────────────────────────────
+
+echo ""
+echo "── 7. Structural Integrity ────────────────────────────────────────────────"
+
+# 7a. atom part-of:: → topic covers:: asymmetry
+while IFS= read -r -d '' f; do
+    atom_name="$(basename "$f" .md)"
+    while IFS= read -r line; do
+        while IFS= read -r target; do
+            topic_file=$(find "$VAULT/topics" -name "${target}.md" 2>/dev/null | head -1)
+            if [ -z "$topic_file" ]; then
+                warn "atoms/${atom_name}.md — part-of:: [[${target}]] but no matching topic file found"
+                continue
+            fi
+            if ! grep -q "covers::.*\[\[${atom_name}\]\]" "$topic_file" 2>/dev/null; then
+                warn "atoms/${atom_name}.md — part-of:: [[${target}]] but ${target}.md covers:: does not include [[${atom_name}]]"
+            fi
+        done < <(echo "$line" | grep -oE '\[\[[^]|]+' | tr -d '[')
+    done < <(grep "^part-of::" "$f" 2>/dev/null || true)
+done < <(find "$VAULT/atoms" -name "*.md" ! -name ".gitkeep" -print0)
+
+# 7b. topic covers:: → atom part-of:: asymmetry
+while IFS= read -r -d '' f; do
+    topic_name="$(basename "$f" .md)"
+    topic_rel="$(realpath --relative-to="$VAULT" "$f")"
+    while IFS= read -r line; do
+        while IFS= read -r target; do
+            atom_file=$(find "$VAULT/atoms" -name "${target}.md" 2>/dev/null | head -1)
+            [ -z "$atom_file" ] && continue
+            if ! grep -q "^part-of::.*\[\[${topic_name}\]\]" "$atom_file" 2>/dev/null; then
+                warn "$topic_rel — covers:: [[${target}]] but atoms/${target}.md has no matching part-of:: [[${topic_name}]]"
+            fi
+        done < <(echo "$line" | grep -oE '\[\[[^]|]+' | tr -d '[')
+    done < <(grep "^covers::" "$f" 2>/dev/null || true)
+done < <(find "$VAULT/topics" -name "*.md" ! -name ".gitkeep" -print0)
+
+# 7c. Atom freshness: newest cited source saved > 18 months ago
+if cutoff18=$(date -d "18 months ago" +%Y-%m-%d 2>/dev/null) || cutoff18=$(date -v-18m +%Y-%m-%d 2>/dev/null); then
+    while IFS= read -r -d '' f; do
+        atom_name="$(basename "$f" .md)"
+        newest_saved=""
+        while IFS= read -r line; do
+            while IFS= read -r src_name; do
+                src_file=$(find "$VAULT/sources" -name "${src_name}.md" 2>/dev/null | head -1)
+                [ -z "$src_file" ] && continue
+                saved=$(grep "^saved:" "$src_file" 2>/dev/null | head -1 | sed 's/^saved:[[:space:]]*//')
+                [ -z "$saved" ] && continue
+                if [ -z "$newest_saved" ] || [[ "$saved" > "$newest_saved" ]]; then
+                    newest_saved="$saved"
+                fi
+            done < <(echo "$line" | grep -oE '\[\[[^]|]+' | tr -d '[')
+        done < <(grep "^cites::" "$f" 2>/dev/null || true)
+        if [ -n "$newest_saved" ] && [[ "$newest_saved" < "$cutoff18" ]]; then
+            warn "atoms/${atom_name}.md — newest cited source saved $newest_saved (>18 months ago); may be stale"
+        fi
+    done < <(find "$VAULT/atoms" -name "*.md" ! -name ".gitkeep" -print0)
+fi
+
+# 7d. Unvalidated atom: all cited sources are status: unread
+while IFS= read -r -d '' f; do
+    atom_name="$(basename "$f" .md)"
+    cites_lines=$(grep "^cites::" "$f" 2>/dev/null || true)
+    [ -z "$cites_lines" ] && continue
+    all_unread=true
+    while IFS= read -r line; do
+        while IFS= read -r src_name; do
+            src_file=$(find "$VAULT/sources" -name "${src_name}.md" 2>/dev/null | head -1)
+            [ -z "$src_file" ] && continue
+            src_status=$(grep "^status:" "$src_file" 2>/dev/null | head -1 | sed 's/^status:[[:space:]]*//')
+            if [ "$src_status" != "unread" ]; then
+                all_unread=false
+                break 2
+            fi
+        done < <(echo "$line" | grep -oE '\[\[[^]|]+' | tr -d '[')
+    done <<< "$cites_lines"
+    if $all_unread; then
+        warn "atoms/${atom_name}.md — all cited sources are status: unread (confidence based on unread material)"
+    fi
+done < <(find "$VAULT/atoms" -name "*.md" ! -name ".gitkeep" -print0)
+
+# 7e. Unknown relation field: body field not in schema taxonomy
+schema_file="$VAULT/_meta/schema.md"
+if [ -f "$schema_file" ]; then
+    valid_fields=$(awk '/^## Valid Relation Fields/{f=1} f && /^```$/{b=!b; next} f && b{print} f && /^---$/ && !b && NR>1{exit}' "$schema_file" | grep -v "^$")
+    if [ -n "$valid_fields" ]; then
+        while IFS= read -r -d '' f; do
+            label=$(realpath --relative-to="$VAULT" "$f")
+            while IFS= read -r field; do
+                if ! echo "$valid_fields" | grep -qx "$field"; then
+                    warn "$label — unknown relation field: ${field}::"
+                fi
+            done < <(awk 'BEGIN{fm=0} /^---$/{fm++; next} fm>=2 && /^[a-z][a-z-]*::/{sub(/::.*/, ""); print}' "$f" 2>/dev/null)
+        done < <(find "$VAULT/sources" "$VAULT/atoms" -name "*.md" ! -name ".gitkeep" -print0 2>/dev/null)
+    fi
+fi
+
+ok "structural integrity check complete"
+
+# ── 8. Confidence and Coverage ───────────────────────────────────────────────
+
+echo ""
+echo "── 8. Confidence and Coverage ─────────────────────────────────────────────"
+
+# 8a. Overconfident atom: confidence: high with fewer than 3 cites::
+while IFS= read -r -d '' f; do
+    atom_name="$(basename "$f" .md)"
+    confidence=$(grep "^confidence:" "$f" 2>/dev/null | head -1 | sed 's/^confidence:[[:space:]]*//')
+    if [ "$confidence" = "high" ]; then
+        cites_count=$(grep -c "^cites::" "$f" 2>/dev/null || true)
+        if [ "$cites_count" -lt 3 ]; then
+            warn "atoms/${atom_name}.md — confidence: high with only $cites_count cites:: (needs 3+ for high confidence)"
+        fi
+    fi
+done < <(find "$VAULT/atoms" -name "*.md" ! -name ".gitkeep" -print0)
+
+# 8b. Underconfident atom: confidence: low with 2+ processed sources
+while IFS= read -r -d '' f; do
+    atom_name="$(basename "$f" .md)"
+    confidence=$(grep "^confidence:" "$f" 2>/dev/null | head -1 | sed 's/^confidence:[[:space:]]*//')
+    if [ "$confidence" = "low" ]; then
+        processed_count=0
+        while IFS= read -r line; do
+            while IFS= read -r src_name; do
+                src_file=$(find "$VAULT/sources" -name "${src_name}.md" 2>/dev/null | head -1)
+                [ -z "$src_file" ] && continue
+                src_status=$(grep "^status:" "$src_file" 2>/dev/null | head -1 | sed 's/^status:[[:space:]]*//')
+                if [ "$src_status" = "processed" ]; then
+                    processed_count=$((processed_count + 1))
+                fi
+            done < <(echo "$line" | grep -oE '\[\[[^]|]+' | tr -d '[')
+        done < <(grep "^cites::" "$f" 2>/dev/null || true)
+        if [ "$processed_count" -ge 2 ]; then
+            warn "atoms/${atom_name}.md — confidence: low but $processed_count processed sources support it (upgrade candidate)"
+        fi
+    fi
+done < <(find "$VAULT/atoms" -name "*.md" ! -name ".gitkeep" -print0)
+
+# 8c. Unvalidated confidence: all cites:: sources are status: unread
+# (complements Section 7d — same detection, framed as a confidence signal)
+while IFS= read -r -d '' f; do
+    atom_name="$(basename "$f" .md)"
+    cites_lines=$(grep "^cites::" "$f" 2>/dev/null || true)
+    [ -z "$cites_lines" ] && continue
+    all_unread=true
+    while IFS= read -r line; do
+        while IFS= read -r src_name; do
+            src_file=$(find "$VAULT/sources" -name "${src_name}.md" 2>/dev/null | head -1)
+            [ -z "$src_file" ] && continue
+            src_status=$(grep "^status:" "$src_file" 2>/dev/null | head -1 | sed 's/^status:[[:space:]]*//')
+            if [ "$src_status" != "unread" ]; then
+                all_unread=false
+                break 2
+            fi
+        done < <(echo "$line" | grep -oE '\[\[[^]|]+' | tr -d '[')
+    done <<< "$cites_lines"
+    if $all_unread; then
+        warn "atoms/${atom_name}.md — confidence assigned but all cited sources are still unread"
+    fi
+done < <(find "$VAULT/atoms" -name "*.md" ! -name ".gitkeep" -print0)
+
+# 8d. Under-extracted source: status: processed, body > 100 lines, atom connections < 2
+while IFS= read -r -d '' f; do
+    label=$(realpath --relative-to="$VAULT" "$f")
+    src_status=$(grep "^status:" "$f" 2>/dev/null | head -1 | sed 's/^status:[[:space:]]*//')
+    if [ "$src_status" = "processed" ]; then
+        line_count=$(wc -l < "$f")
+        if [ "$line_count" -gt 100 ]; then
+            introduces_count=$(grep -c "^introduces::" "$f" 2>/dev/null || true)
+            supports_count=$(grep -c "^supports::" "$f" 2>/dev/null || true)
+            atom_connections=$((introduces_count + supports_count))
+            if [ "$atom_connections" -lt 2 ]; then
+                warn "$label — status: processed, $line_count lines, but only $atom_connections atom connections (introduces+supports); may be under-extracted"
+            fi
+        fi
+    fi
+done < <(find "$VAULT/sources" -name "*.md" ! -name ".gitkeep" -print0)
+
+ok "confidence and coverage check complete"
+
+# ── 9. Conflict Acknowledgment ───────────────────────────────────────────────
+
+echo ""
+echo "── 9. Conflict Acknowledgment ─────────────────────────────────────────────"
+
+# 9a. Bare conflict link: atom has contradicts:: or refutes:: but no prose in body
+while IFS= read -r -d '' f; do
+    atom_name="$(basename "$f" .md)"
+    has_conflict=$(grep -cE "^(contradicts|refutes)::[[:space:]]*\[\[" "$f" 2>/dev/null || true)
+    if [ "$has_conflict" -gt 0 ]; then
+        # Prose: a body line that is not empty, not a # header, not a field line,
+        # not an HTML comment, and has at least 10 characters
+        has_prose=$(awk 'BEGIN{fm=0} /^---$/{fm++; next} fm>=2 && /^[^#[:space:]]/ && !/^[a-z][a-z-]*::/ && !/^<!--/ && length($0)>=10{print; exit}' "$f" 2>/dev/null)
+        if [ -z "$has_prose" ]; then
+            conflict_field=$(grep -oE "^(contradicts|refutes)::" "$f" | head -1)
+            warn "atoms/${atom_name}.md — has ${conflict_field} but no explanatory prose in body (bare conflict link)"
+        fi
+    fi
+done < <(find "$VAULT/atoms" -name "*.md" ! -name ".gitkeep" -print0)
+
+ok "conflict acknowledgment check complete"
+
+# ── 10. Tag Vocabulary ───────────────────────────────────────────────────────
+
+echo ""
+echo "── 10. Tag Vocabulary ─────────────────────────────────────────────────────"
+
+schema_file="$VAULT/_meta/schema.md"
+valid_tags=$(awk '/^## Tags/{f=1; next} f && /^## /{exit} f && /^- /{sub(/^- /, ""); print}' "$schema_file" 2>/dev/null | grep -v "^$" || true)
+
+if [ -z "$valid_tags" ]; then
+    echo -e "  ${DIM}SKIP${NC}  no ## Tags section found in schema.md — define vocabulary to enable this check"
+else
+    while IFS= read -r -d '' f; do
+        label=$(realpath --relative-to="$VAULT" "$f")
+        # Extract tags line from frontmatter
+        tags_line=$(awk '/^---$/{fm++; next} fm==1 && /^tags:/{print; exit} fm==2{exit}' "$f" 2>/dev/null || true)
+        [ -z "$tags_line" ] && continue
+        # Parse inline YAML array: tags: [a, b, c] or tags: []
+        if [[ "$tags_line" =~ \[([^]]*)\] ]]; then
+            tags_content="${BASH_REMATCH[1]}"
+            [[ -z "$(echo "$tags_content" | tr -d ' ,')" ]] && continue
+            IFS=',' read -ra tag_arr <<< "$tags_content"
+            for raw_tag in "${tag_arr[@]}"; do
+                tag=$(echo "$raw_tag" | sed "s/^[[:space:]]*//;s/[[:space:]]*$//;s/[\"']//g")
+                [ -z "$tag" ] && continue
+                if ! echo "$valid_tags" | grep -qx "$tag"; then
+                    warn "$label — unknown tag: '$tag' (not in schema.md ## Tags)"
+                fi
+            done
+        fi
+    done < <(find "$VAULT/atoms" "$VAULT/sources" -name "*.md" ! -name ".gitkeep" -print0 2>/dev/null)
+    ok "tag vocabulary check complete"
+fi
+
+# ── Summary ───────────────────────────────────────────────────────────────────
 
 echo ""
 echo "── Summary ────────────────────────────────────────────────────────────────"

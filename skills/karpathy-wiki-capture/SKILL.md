@@ -20,7 +20,7 @@ This skill does one thing: get a URL into the vault as fast as possible. Metadat
 | `docs.*`, `*.readthedocs.io`, `*.dev/docs*`, `*.io/docs*`, official library reference pages | `docs` | `sources/docs/` |
 | Everything else | `web` | `sources/web/` |
 
-If the URL doesn't clearly resolve, ask once: "Is this a paper, video, docs page, or general article?" Meeting notes (no URL) use `source-meeting.md` — this skill does not handle them.
+If the URL doesn't clearly resolve, ask once: "Is this a paper, video, docs page, or general article?" For meeting notes (no URL), use `karpathy-wiki-meeting` instead.
 
 ---
 
@@ -102,7 +102,7 @@ Report the file path. One line: note is in the inbox, run `karpathy-wiki-connect
 - Does not write any Dataview relation fields with values
 - Does not create atom stubs or glossary stubs
 - Does not update `_meta/log.md`
-- Does not handle meeting notes — those are manual entries using `source-meeting.md`
+- Does not handle meeting notes (no URL) — use `karpathy-wiki-meeting` for those
 
 ---
 
