@@ -39,22 +39,7 @@ grep -rl "status: read" "$VAULT/sources/"
 
 For each hit, read its title and saved date. These are the highest-value targets: the user already knows the content, they just need to wire it.
 
-### Check 3 — Stale atoms (not updated in > 12 months)
-Atoms where `updated:` is more than 12 months before today.
-
-```bash
-grep -rl "updated:" "$VAULT/atoms/" | xargs grep -l "confidence:" | while read f; do
-  updated=$(grep "^updated:" "$f" | head -1 | awk '{print $2}')
-  confidence=$(grep "^confidence:" "$f" | head -1 | awk '{print $2}')
-  echo "$updated $confidence $f"
-done | sort
-```
-
-Flag atoms where `updated:` is > 12 months old. Include their confidence level — a stale `confidence: high` atom is more concerning than a stale `confidence: low` stub.
-
-**Do not flag:** atoms with no `updated:` field (they've never been revised — that's different from stale). Mention the count of un-timestamped atoms separately.
-
-### Check 4 — Underconfident topics
+### Check 3 — Underconfident topics
 Topics where every atom in `covers::` has `confidence: low`.
 
 ```bash
@@ -85,20 +70,14 @@ These are highest priority: you've already read them.
 | ...   | ...    | ...   | ...         |
 → Run: memex-save (to mark as read and optionally build a summary) or memex-connect (to process directly)
 
-### Stale atoms (Check 3) — N atoms
-| Atom | Confidence | Last updated | Days elapsed |
-|------|------------|-------------|-------------|
-| ...  | ...        | ...          | ...         |
-→ Run: memex-trust-audit or memex-refactor (revise) as appropriate
-
-### Underconfident topics (Check 4) — N topics
+### Underconfident topics (Check 3) — N topics
 | Topic | Atom count | All confidence: low |
 |-------|------------|---------------------|
 | ...   | ...        | yes                 |
 → Run: memex-connect (add sources) or memex-trust-audit
 
 ---
-Total: N findings across 4 checks.
+Total: N findings across 3 checks.
 ```
 
 If a check finds nothing, say so in one line and move on — don't omit the section.
@@ -118,15 +97,13 @@ If the user asks to act on a specific finding during this session, describe what
 ## What This Skill Does NOT Do
 
 - Does not modify any vault file
-- Does not update `status:`, `updated:`, or `confidence:` fields
+- Does not update `status:` or `confidence:` fields
 - Does not write a log entry (read-only)
-- Does not infer whether stale content is *wrong* — only that it hasn't been touched
+- Does not track atom age or flag atoms for temporal decay — atom freshness is domain-dependent and left to the user's judgment
 - Does not flag sources in `status: processed` regardless of age — processed is terminal
 
 ---
 
 ## Common Mistakes to Avoid
-- Don't flag `confidence: low` atoms as stale just because of confidence — only flag on the `updated:` age threshold
 - Don't include `.archive/` or `_exports/` in any scan — those folders are not vault nodes
-- Don't surface Check 3 findings for atoms that have no `updated:` field at all — report that count separately as "never timestamped"
 - Don't overwhelm with findings — if Check 1 returns > 20 sources, cap the table at 10 and note the total count
