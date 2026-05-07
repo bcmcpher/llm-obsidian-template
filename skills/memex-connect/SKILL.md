@@ -1,6 +1,6 @@
 ---
 name: memex-connect
-description: Wire captured sources into the knowledge graph. Use when the user wants to process their inbox, integrate accumulated unread notes, or add connections between existing notes. Triggers on: "process my inbox", "wire up my unread notes", "connect my captures", "integrate my sources", "link my notes to atoms", "I want to process what I've saved". Also triggers for targeted connection work: "add connections to this note", "wire this source into the graph", "link [note] to [concept]". This skill does not capture new sources — use memex-capture or memex-ingest for that.
+description: Wire captured sources into the knowledge graph. Use when the user wants to process their inbox, integrate accumulated unread notes, or add connections between existing notes. Triggers on: "process my inbox", "wire up my unread notes", "connect my captures", "integrate my sources", "link my notes to atoms", "I want to process what I've saved". Also triggers for targeted connection work: "add connections to this note", "wire this source into the graph", "link [note] to [concept]". This skill does not capture new sources — use memex-save or memex-ingest for that.
 ---
 
 # Karpathy Wiki Connect

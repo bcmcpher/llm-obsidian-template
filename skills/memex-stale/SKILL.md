@@ -83,7 +83,7 @@ These are highest priority: you've already read them.
 | Title | Medium | Saved | Days elapsed |
 |-------|--------|-------|-------------|
 | ...   | ...    | ...   | ...         |
-→ Run: memex-read (if you've read it) or memex-connect (to process directly)
+→ Run: memex-save (to mark as read and optionally build a summary) or memex-connect (to process directly)
 
 ### Stale atoms (Check 3) — N atoms
 | Atom | Confidence | Last updated | Days elapsed |

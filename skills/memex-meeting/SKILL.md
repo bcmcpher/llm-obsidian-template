@@ -1,6 +1,6 @@
 ---
 name: memex-meeting
-description: Save meeting notes to the vault as a structured source note. Use when the user wants to record a meeting, discussion, or conversation — not a URL. Triggers on: "log this meeting", "save my meeting notes", "record this discussion", "add meeting notes", "I just had a meeting about", "take notes on this conversation". For URL-based sources, use memex-capture or memex-ingest instead.
+description: Save meeting notes to the vault as a structured source note. Use when the user wants to record a meeting, discussion, or conversation — not a URL. Triggers on: "log this meeting", "save my meeting notes", "record this discussion", "add meeting notes", "I just had a meeting about", "take notes on this conversation". For URL-based sources, use memex-save or memex-ingest instead.
 ---
 
 # Karpathy Wiki Meeting
@@ -17,7 +17,7 @@ This skill takes meeting notes — spoken, typed, or pasted — and creates a pr
 - Logging a research discussion with a collaborator
 - Capturing a talk, lecture, or presentation attended in person (no recording URL)
 
-For sources with a URL (video, paper, article), use `memex-capture` or `memex-ingest`.
+For sources with a URL (video, paper, article), use `memex-save` or `memex-ingest`.
 
 ---
 
@@ -184,7 +184,7 @@ notes: <N> decisions, <M> action items, <K> follow-up sources mentioned
 
 ## What This Skill Does NOT Do
 
-- Does not handle URL-based sources — use `memex-capture` or `memex-ingest` for those
+- Does not handle URL-based sources — use `memex-save` or `memex-ingest` for those
 - Does not create calendar events or external integrations
 - Does not transcribe audio — paste or describe the content; transcription is out of scope
 - Does not mark the note `processed` automatically — that requires the user to confirm action items are done

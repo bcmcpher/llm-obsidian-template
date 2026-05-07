@@ -173,8 +173,7 @@ Skills that write vault notes, and what they produce:
 
 | Skill | What it creates | Graph wiring | Log entry |
 |-------|----------------|--------------|-----------|
-| `memex-capture` | Source note (metadata + summary) | None | Yes |
-| `memex-read` | Sets `status: read`; captures first-read reactions | None | Yes |
+| `memex-save` | Source note with fetched title + summary draft; branches on read status; optional collaborative summary | None | Yes |
 | `memex-ingest` | Source note + atoms + connections | Full | Yes |
 | `memex-connect` | Updates existing unread notes | Full | Yes |
 | `memex-meeting` | Meeting source note + atom/glossary stubs | Full | Yes |

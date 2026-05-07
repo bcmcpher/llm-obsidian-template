@@ -9,7 +9,7 @@ description: Ingest a new source into the personal Karpathy-style Obsidian wiki 
 
 This vault uses a layered structure: raw sources feed concept atoms, which feed topic maps. Your job here is to create a well-formed source note, connect it to existing atoms, and optionally seed new atoms — keeping the graph growing without duplicating work.
 
-For quick saves without graph wiring, use `memex-capture`. To process accumulated inbox notes, use `memex-connect`.
+For quick saves without graph wiring, use `memex-save`. To process accumulated inbox notes, use `memex-connect`.
 
 For the relationship taxonomy and full field definitions, read: `references/vault-schema.md`
 

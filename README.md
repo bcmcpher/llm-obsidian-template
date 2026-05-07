@@ -211,8 +211,8 @@ The skills follow a natural progression from raw input to composed output:
 
 ```
 INGEST ──────────────────────────────────────────────────
-  capture        URL → inbox note (fast, no processing)
-  read           mark a source as read; capture first-read reactions
+  save           URL → fetched title + summary draft; branches on read status;
+                 optional collaborative summary session
   ingest         URL → fully processed note + atoms
   connect        inbox notes → enrich metadata + wire connections
   meeting        meeting notes → structured source note
@@ -250,9 +250,8 @@ Run reconcile before trust-audit; run both before compose. The output quality of
 
 | What you have | What to say | Skill |
 |---------------|-------------|-------|
-| A URL you'll process later | "quick save this: [url]" | capture |
-| A source you've read, not yet wired | "mark this as read" | read |
-| A URL ready to process now | "ingest this: [url]" | ingest |
+| A URL to save (read or unread) | "save this: [url]" | save |
+| A URL ready to process with atoms | "ingest this: [url]" | ingest |
 | Accumulated inbox notes | "process my inbox" | connect |
 | Meeting notes | "log this meeting" | meeting |
 
@@ -291,9 +290,8 @@ Run reconcile before trust-audit; run both before compose. The output quality of
 
 | Skill | Phase | Trigger phrases |
 |-------|-------|-----------------|
-| `memex-capture` | Ingest | "quick save", "just bookmark", "capture for later" |
-| `memex-read` | Ingest | "I've read this", "mark as read", "read but not processed" |
-| `memex-ingest` | Ingest | "save this", "add to wiki", "ingest" |
+| `memex-save` | Ingest | "quick save", "just bookmark", "save this", "I've read this", "mark as read" |
+| `memex-ingest` | Ingest | "ingest this", "add to wiki with atoms", "full ingest" |
 | `memex-connect` | Ingest | "process my inbox", "wire up my notes" |
 | `memex-meeting` | Ingest | "log this meeting", "save meeting notes", "record this discussion" |
 | `memex-topic-init` | Structure | "create topic map", "start a new topic", "initialize [domain]" |
