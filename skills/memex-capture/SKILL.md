@@ -89,7 +89,17 @@ related::
 
 Do not add type-specific frontmatter fields (authors, channel, tool, etc.) — those require fetching and are added by the connect step.
 
-### 5. Confirm and close
+### 5. Log
+Append to `_meta/log.md`:
+```markdown
+## [YYYY-MM-DD] captured | <slug-derived title>
+url:: <url>
+atoms:: 
+skill:: memex-capture
+notes: inbox only — run memex-connect to enrich and wire
+```
+
+### 6. Confirm and close
 Report the file path. One line: note is in the inbox, run `memex-connect` to enrich and wire it.
 
 ---
@@ -101,7 +111,6 @@ Report the file path. One line: note is in the inbox, run `memex-connect` to enr
 - Does not add type-specific fields (`authors`, `channel`, `tool`, etc.)
 - Does not write any Dataview relation fields with values
 - Does not create atom stubs or glossary stubs
-- Does not update `_meta/log.md`
 - Does not handle meeting notes (no URL) — use `memex-meeting` for those
 
 ---

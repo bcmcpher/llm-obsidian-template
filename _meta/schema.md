@@ -173,15 +173,18 @@ Skills that write vault notes, and what they produce:
 
 | Skill | What it creates | Graph wiring | Log entry |
 |-------|----------------|--------------|-----------|
-| `memex-capture` | Source note (metadata + summary) | None | No |
+| `memex-capture` | Source note (metadata + summary) | None | Yes |
+| `memex-read` | Sets `status: read`; captures first-read reactions | None | Yes |
 | `memex-ingest` | Source note + atoms + connections | Full | Yes |
 | `memex-connect` | Updates existing unread notes | Full | Yes |
 | `memex-meeting` | Meeting source note + atom/glossary stubs | Full | Yes |
-| `memex-topic-init` | New topic map + atom back-wires | Full | No |
-| `memex-refactor` | Rewrites/splits/merges existing atoms | Varies | No |
+| `memex-topic-init` | New topic map + atom back-wires | Full | Yes |
+| `memex-refactor` | Rewrites/splits/merges existing atoms | Varies | Yes |
 | `memex-glossary` | Glossary entries from existing notes | `defines::` only | No |
 | `memex-candidates` | Applies pending candidates from `_meta/candidates/` | Varies | No |
 | `memex-compose` | Export document in `_exports/` | None (read-only) | Yes |
+
+Atom bodies may be modified by multiple skills (`memex-refactor` revise, `memex-connect` back-wiring, `memex-review` accepted findings). This is expected — the `updated:` frontmatter field is the authoritative timestamp for when an atom last changed, regardless of which skill made the change.
 
 ---
 

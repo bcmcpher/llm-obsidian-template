@@ -154,7 +154,17 @@ Based on what the confirmed sources discuss, are there obvious concepts that bel
 
 This keeps the topic from starting as an isolated node — even stub atoms give the graph something to query.
 
-### 9. Summary
+### 9. Log
+Append to `_meta/log.md`:
+```markdown
+## [YYYY-MM-DD] topic-created | <topic-title>
+url:: n/a
+atoms:: [[atom-one]], [[atom-two]]
+skill:: memex-topic-init
+notes: type: <concept|research|project>; covers N atoms; M sources; L stubs created
+```
+
+### 10. Summary
 Report:
 - Topic file created at `<path>`
 - N atoms linked via `covers::`

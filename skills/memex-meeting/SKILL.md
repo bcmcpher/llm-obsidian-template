@@ -125,6 +125,14 @@ Ask before creating each stub — do not auto-create.
 
 For each technical term that surfaced in the meeting that needs precise definition but doesn't warrant an atom — no claims, no evidence chain, just a stable definition:
 
+Before proposing a stub, check whether the term already exists in the vault or as a pending candidate:
+```bash
+VAULT=/home/bcmcpher/Projects/claude/memex-vault
+ls "$VAULT/glossary/" | grep -i "term-keyword"
+grep -rl "term: " "$VAULT/_meta/candidates/" 2>/dev/null | xargs grep -l "term-keyword" 2>/dev/null
+```
+If either check returns a match, show the existing entry and skip the creation prompt.
+
 > "The term [X] came up but has no glossary entry yet. Want to create a stub? (Yes / Skip)"
 
 Write a candidate file to `_meta/candidates/` before creating the glossary entry. If yes, create `glossary/kebab-term.md`:

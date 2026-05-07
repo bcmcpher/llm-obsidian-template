@@ -144,7 +144,15 @@ If the source defines a specific technical term precisely — and that term's va
 - **Glossary**: the term has a stable, non-controversial definition; other notes will reference it via `defines::` rather than `supports::` or `introduces::`
 - **Atom**: the concept makes claims, can accumulate evidence from multiple sources, or connects structurally to other concepts → use Step 6 instead
 
-For each glossary candidate, ask: "Create a glossary stub for '[term]'? (Yes / Skip)"
+Before proposing a stub, check whether the term already exists in the vault or as a pending candidate:
+```bash
+VAULT=/home/bcmcpher/Projects/claude/memex-vault
+ls "$VAULT/glossary/" | grep -i "term-keyword"
+grep -rl "term: " "$VAULT/_meta/candidates/" 2>/dev/null | xargs grep -l "term-keyword" 2>/dev/null
+```
+If either check returns a match, show the existing entry and skip the creation prompt.
+
+For each new glossary candidate, ask: "Create a glossary stub for '[term]'? (Yes / Skip)"
 
 Write a candidate file before creating the glossary entry (see Candidate Gating below).
 

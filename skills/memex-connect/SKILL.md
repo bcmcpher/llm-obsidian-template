@@ -121,6 +121,14 @@ grep -rl "concept-keyword" "$VAULT/atoms/"
 
 A term belongs in `glossary/` when its value is definitional rather than evidential: stable definition, no competing claims to track, referenced via `defines::` rather than `supports::` or `introduces::`.
 
+Before proposing a stub, check whether the term already exists in the vault or as a pending candidate:
+```bash
+VAULT=/home/bcmcpher/Projects/claude/memex-vault
+ls "$VAULT/glossary/" | grep -i "term-keyword"
+grep -rl "term: " "$VAULT/_meta/candidates/" 2>/dev/null | xargs grep -l "term-keyword" 2>/dev/null
+```
+If either check returns a match, show the existing entry and skip the creation prompt.
+
 Ask: "Create a glossary stub for '[term]'? (Yes / Skip)"
 
 If yes, create `glossary/kebab-term.md`:

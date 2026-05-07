@@ -74,10 +74,10 @@ Based on the atoms present and the sources they cite, are there obvious concepts
 Are `related::` links between atoms that could be made more specific? Look for pairs where a more precise type (`extends::`, `uses::`, `part-of::`, `contradicts::`, `contrasts-with::`) clearly fits. Flag each with the proposed replacement.
 
 **Lens D — Unacknowledged conflict**  
-Do any atoms in this topic make claims that are in tension with each other, without a `contradicts::`, `challenges::`, or `limits::` link between them? Surface these pairs and describe the tension. Propose which skeptical relation fits best.
+Skip conflict detection here — use `memex-conflicts` instead. It handles this more precisely: it scans relation fields directly, classifies acknowledged vs. unacknowledged pairs, and drafts tension prose for you. If you haven't run `memex-conflicts` on this topic recently, note that to the user and suggest running it after this review.
 
-**Lens E — Confidence vs. evidence**  
-Are there atoms with `confidence: medium` or `high` that only cite a single source, or cite sources still marked `status: unread`? Flag these as overconfident. Conversely, are there atoms with `confidence: low` that now have multiple independent sources (suggesting an upgrade)?
+**Lens E — Confidence vs. evidence (flag only)**  
+Are there atoms with `confidence: medium` or `high` that only cite a single source, or cite sources still marked `status: unread`? Flag these as potentially overconfident. Are there atoms with `confidence: low` that now have multiple independent processed sources? Flag these as upgrade candidates. Do **not** propose or apply confidence changes here — surface the list and tell the user to run `memex-trust-audit` to make the actual adjustments with full provenance checks.
 
 **Lens F — Structural integrity**  
 Does the topic map's `covers::` list form a coherent cluster, or does it read like a dumping ground? Is there a clear conceptual spine? If the topic seems like two separate domains merged together, suggest a split with proposed names and which atoms would go where.
@@ -126,7 +126,8 @@ Report:
 - Does not touch sources or raw `sources/` files
 - Does not run across all topics at once — one topic per session, by design
 - Does not delete atoms — only proposes moves and adds new links
-- Does not change `confidence:` on atoms automatically — proposes upgrades/downgrades; user confirms
+- Does not change `confidence:` on atoms — flags candidates for `memex-trust-audit` to handle with full provenance checks
+- Does not detect conflicts — delegates to `memex-conflicts` (Lens D is a pointer, not an implementation)
 
 ---
 
