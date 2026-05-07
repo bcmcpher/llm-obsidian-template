@@ -210,15 +210,16 @@ If Claude doesn't pick up the right skill, name it explicitly: *"use memex-inges
 The skills follow a natural progression from raw input to composed output:
 
 ```
-INGEST ──────────────────────────────────────────────────
+CAPTURE ─────────────────────────────────────────────────
   save           URL → fetched title + summary draft; branches on read status;
                  optional collaborative summary session
   ingest         URL → fully processed note + atoms
-  connect        inbox notes → enrich metadata + wire connections
   meeting        meeting notes → structured source note
 
 STRUCTURE ───────────────────────────────────────────────
-  topic-init     create a new topic map
+  connect        inbox notes → enrich metadata + wire connections
+  topic-init     create a new topic map (top-down)
+  topic-emerge   discover emerging topic clusters from atoms (bottom-up)
   refactor       revise / split / merge existing atoms
 
 MAINTAIN ────────────────────────────────────────────────
@@ -252,14 +253,15 @@ Run reconcile before trust-audit; run both before compose. The output quality of
 |---------------|-------------|-------|
 | A URL to save (read or unread) | "save this: [url]" | save |
 | A URL ready to process with atoms | "ingest this: [url]" | ingest |
-| Accumulated inbox notes | "process my inbox" | connect |
 | Meeting notes | "log this meeting" | meeting |
 
 **Building and maintaining the graph**
 
 | Task | What to say | Skill |
 |------|-------------|-------|
+| Process inbox notes into the graph | "process my inbox" | connect |
 | Start a new domain area | "create a topic map for [domain]" | topic-init |
+| Discover topics from accumulated atoms | "what topics are emerging?" | topic-emerge |
 | Update an atom's body | "revise atom [name]" | refactor |
 | Atom covers two things | "split [atom] into [A] and [B]" | refactor |
 | Merge redundant atoms | "merge [A] and [B]" | refactor |
@@ -290,11 +292,12 @@ Run reconcile before trust-audit; run both before compose. The output quality of
 
 | Skill | Phase | Trigger phrases |
 |-------|-------|-----------------|
-| `memex-save` | Ingest | "quick save", "just bookmark", "save this", "I've read this", "mark as read" |
-| `memex-ingest` | Ingest | "ingest this", "add to wiki with atoms", "full ingest" |
-| `memex-connect` | Ingest | "process my inbox", "wire up my notes" |
-| `memex-meeting` | Ingest | "log this meeting", "save meeting notes", "record this discussion" |
+| `memex-save` | Capture | "quick save", "just bookmark", "save this", "I've read this", "mark as read" |
+| `memex-ingest` | Capture | "ingest this", "add to wiki with atoms", "full ingest" |
+| `memex-meeting` | Capture | "log this meeting", "save meeting notes", "record this discussion" |
+| `memex-connect` | Structure | "process my inbox", "wire up my notes" |
 | `memex-topic-init` | Structure | "create topic map", "start a new topic", "initialize [domain]" |
+| `memex-topic-emerge` | Structure | "what topics are emerging", "discover clusters", "find natural groupings", "suggest topic maps" |
 | `memex-refactor` | Structure | "refactor atom", "split [atom]", "merge [A] and [B]", "revise [atom]" |
 | `memex-reconcile` | Maintain | "reconcile my vault", "check graph integrity", "fix bidirectional links" |
 | `memex-trust-audit` | Maintain | "audit confidence", "trust audit [topic]", "are my atoms overconfident" |

@@ -178,6 +178,7 @@ Skills that write vault notes, and what they produce:
 | `memex-connect` | Updates existing unread notes | Full | Yes |
 | `memex-meeting` | Meeting source note + atom/glossary stubs | Full | Yes |
 | `memex-topic-init` | New topic map + atom back-wires | Full | Yes |
+| `memex-topic-emerge` | Proposed topic maps from atom clusters + atom back-wires | Full | Yes |
 | `memex-refactor` | Rewrites/splits/merges existing atoms | Varies | Yes |
 | `memex-glossary` | Glossary entries from existing notes | `defines::` only | No |
 | `memex-candidates` | Applies pending candidates from `_meta/candidates/` | Varies | No |
